@@ -123,7 +123,7 @@ class Game:
     
     def draw(self):
         # Fill the background color as black
-        self.window.fill((128, 128, 128))
+        self.window.fill((64, 64, 64))
 
         self._draw_food()
         self._draw_snake()

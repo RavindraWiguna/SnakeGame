@@ -51,7 +51,7 @@ class Snake:
             # Draw outer rectangle
             draw.rect(win, self.OUTER_COLOR, (self.bodies[i].x*self.size, self.bodies[i].y*self.size, self.size, self.size))
             # Draw inner rectangle
-            draw.rect(win, self.INNER_COLOR, (self.bodies[i].x*self.size + self.offset, self.bodies[i].y*self.size + self.offset, self.inner_size, self.inner_size))
+            # draw.rect(win, self.INNER_COLOR, (self.bodies[i].x*self.size + self.offset, self.bodies[i].y*self.size + self.offset, self.inner_size, self.inner_size))
 
     def reset(self):
         # reset body length to one

@@ -11,7 +11,7 @@ class Snake:
     example: Snake(1, 2, 10) will create the snake on (10, 20) pixel coordinate with dimmension ( 10 x 10 )
     '''
     INNER_COLOR = (51, 255, 51) # Green
-    OUTER_COLOR = (0, 128, 0) # Green too
+    OUTER_COLOR = (10, 235, 10) # Green too
 
     def __init__(self, x:int, y:int, block_size:int) -> None:
         self.size = block_size

@@ -2,13 +2,13 @@ import pygame
 from snakegame import Game
 
 if __name__ =="__main__":
-    width, height = 640, 480
+    width, height = 648, 480
     win = pygame.display.set_mode((width, height))
-    snake_game = Game(win, width, height, 32)
+    snake_game = Game(win, width, height, 24)
     clock = pygame.time.Clock()
     isRunning = True
     while isRunning:
-        clock.tick(15)
+        clock.tick(25)
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 isRunning = False

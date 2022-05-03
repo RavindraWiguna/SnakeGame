@@ -1,10 +1,12 @@
 from typing import Tuple
+import cv2
 import pygame
 from random import randint
 from .snake import Snake
 from .food import Food
 from .enums import Direction
 from collections import Counter
+import numpy as np
 
 # Initialize the pygame
 pygame.init()
@@ -129,6 +131,21 @@ class Game:
         self._draw_snake()
         self._draw_score()
     
+    # Method to generate alternative input for neural network
+    def mini_vision(self, isShow=False):
+        # paint background
+        frame = np.full((self.total_row, self.total_col), 0.5, np.float32)
+        # paint snake body
+        for i in range(self.snake.length):
+            frame[self.snake.bodies[i].y][self.snake.bodies[i].x] = 0.0
+        
+        # paint food
+        frame[self.food.pos.y][self.food.pos.x] = 1.0
+        if(isShow):
+            cv2.imshow('test', frame)
+            cv2.waitKey(1)
+        return frame
+    
     # Do a one game loop (move, update, draw)
     def loop(self, isHumanControlled: bool):
         """
@@ -153,3 +170,6 @@ class Game:
         self.snake.reset()
         self._respawn_food()
         self.isEnd = False
+    
+    def stop(self):
+        cv2.destroyAllWindows()

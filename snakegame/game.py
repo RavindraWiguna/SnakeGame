@@ -58,19 +58,23 @@ class Game:
                 # add i to list of spawnable tiles if it aint occupied
                 self.spawnable_tiles.append(i)
 
+    def _respawn_food(self):
+        # Get all possible tile to spawn food
+        self._get_spawnable()
+        # If there exist a tile to spawn
+        if(self.spawnable_tiles):
+            self.food.respawn(self.spawnable_tiles, self.total_col)
+        else:
+            self.isEnd = True
+
     def _food_collider(self):
         if(abs(self.snake.bodies[0].x - self.food.pos.x) < 1
             and abs(self.snake.bodies[0].y - self.food.pos.y)< 1):
            
             self.score+=1
             self.snake.add_body()
-            # Get all possible tile to spawn food
-            self._get_spawnable()
-            # If there exist a tile to spawn
-            if(self.spawnable_tiles):
-                self.food.respawn(self.spawnable_tiles, self.total_col)
-            else:
-                self.isEnd = True
+            self._respawn_food()
+
 
     def _wall_collider(self):
         if(self.snake.bodies[0].x >= self.total_col or 
@@ -146,7 +150,6 @@ class Game:
     
     def reset(self):
         self.score = 0
-        self.isEnd = False
-        self.spawnable_tiles.clear()
         self.snake.reset()
-        self.food.respawn()
+        self._respawn_food()
+        self.isEnd = False

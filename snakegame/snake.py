@@ -17,7 +17,7 @@ class Snake:
         self.size = block_size
         self.inner_size = self.size//2
         self.offset = self.size//4
-        self.bodies = [Point(x, y)]
+        self.bodies = [Point(x, y, None)]
         self.length = 1
         self.direction = Direction.RIGHT
 
@@ -43,7 +43,7 @@ class Snake:
     
     def add_body(self):
         # just append 0, 0 it will then be updated
-        self.bodies.append(Point(-1, -1))
+        self.bodies.append(Point(-1, -1, None))
         self.length +=1
     
     def render(self, win):
@@ -51,7 +51,7 @@ class Snake:
             # Draw outer rectangle
             draw.rect(win, self.OUTER_COLOR, (self.bodies[i].x*self.size, self.bodies[i].y*self.size, self.size, self.size))
             # Draw inner rectangle
-            # draw.rect(win, self.INNER_COLOR, (self.bodies[i].x*self.size + self.offset, self.bodies[i].y*self.size + self.offset, self.inner_size, self.inner_size))
+            draw.rect(win, self.INNER_COLOR, (self.bodies[i].x*self.size + self.offset, self.bodies[i].y*self.size + self.offset, self.inner_size, self.inner_size))
 
     def reset(self):
         # reset body length to one

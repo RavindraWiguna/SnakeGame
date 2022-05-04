@@ -12,7 +12,7 @@ class Food:
     '''
     COLOR = (250, 2, 3)
     def __init__(self, x:int, y:int, size:int) -> None:
-        self.pos = Point(x, y)
+        self.pos = Point(x, y, None)
         self.size = size
     
     def render(self, win):

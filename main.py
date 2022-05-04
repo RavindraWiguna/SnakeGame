@@ -1,10 +1,11 @@
+from math import sqrt
 import pygame
 from snakegame import Game
 from neatUtils import visualize
 import neat
 import pickle
 import os
-from snakegame.enums import Actions
+from snakegame.enums import Actions, Direction
 from numpy import argmax
 import time
 from snakegame.game import GameInformation
@@ -19,7 +20,7 @@ def play_snake(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     # tuple of act for net
     actions = (Actions.STRAIGHT, Actions.LEFT, Actions.RIGHT)
-    
+    directions = (Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT)
     # create the game
     snake_game = Game(win, width, height, 24)
     # clock = pygame.time.Clock()
@@ -36,8 +37,9 @@ def play_snake(genome, config):
         
         output = net.activate(xi.ravel())
         comp_action = argmax(output)
-        game_info = snake_game.loop(False, actions[comp_action])
-        genome.fitness += game_info.reward - 0.01*(comp_action != 0)
+        # game_info = snake_game.loop(False, actions[comp_action])
+        game_info = snake_game.loop(False, directions[comp_action])
+        genome.fitness += game_info.reward + 0.01
         if(game_info.just_eat_food):
             total_act_after_eat = -1
 
@@ -46,7 +48,8 @@ def play_snake(genome, config):
         snake_game.draw()
         pygame.display.update()
     
-    genome.fitness += game_info.score
+    genome.fitness += game_info.score*75 + 75 - sqrt((snake_game.snake.bodies[0].x - snake_game.food.pos.x)**2
+                                            +(snake_game.snake.bodies[0].y - snake_game.food.pos.y)**2)
 
 
 def eval_genomes(genomes, config):
@@ -58,7 +61,7 @@ def eval_genomes(genomes, config):
     for genome_id, genome in genomes:
         genome.fitness = 0
         play_snake(genome, config)
-        # print(f'finish train genome: {genome_id}, got: {genome.fitness}')
+        print(f'genome: {genome_id}, got: {genome.fitness}')
             
 
 def run(config_file):
@@ -67,17 +70,18 @@ def run(config_file):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
+    # print(config.pop_size)
     # Create the population, which is the top-level object for a NEAT run.
+    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-99')
     p = neat.Population(config)
-
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(10))
+    p.add_reporter(neat.Checkpointer(100))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 301)
+    winner = p.run(eval_genomes, 2001)
 
     # Save the winner
     with open("best_genome.pickle", "wb") as saver:    

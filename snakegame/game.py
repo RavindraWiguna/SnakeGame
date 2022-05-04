@@ -89,6 +89,7 @@ class Game:
            
             self.score+=1
             self.reward +=75
+            print("uncomment add body to add body")
             # self.snake.add_body()
             self._respawn_food()
             self.just_eat_food = True

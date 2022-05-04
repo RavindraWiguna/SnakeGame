@@ -42,9 +42,9 @@ class Game:
             raise ValueError(f'{block_size} is not the factor of game dimensions ({width} x {height})')
 
         # Create snake
-        self.snake = Snake(randint(2, self.total_col-3), randint(2, self.total_row-3), block_size)
-        self.snake.direction = choice((Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP))
-        for _ in range(4):
+        self.snake = Snake(self.total_col//2, self.total_row//2, block_size)
+        # self.snake.direction = choice((Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP))
+        for _ in range(0):
             self.snake.add_body()
         # Create food
         self.food = Food(randint(0, self.total_col-1), randint(0, self.total_row-1), self.block_size)
@@ -88,8 +88,8 @@ class Game:
             and abs(self.snake.bodies[0].y - self.food.pos.y)< 1):
            
             self.score+=1
-            self.reward +=50
-            self.snake.add_body()
+            self.reward +=75
+            # self.snake.add_body()
             self._respawn_food()
             self.just_eat_food = True
 
@@ -100,12 +100,12 @@ class Game:
            self.snake.bodies[0].y >= self.total_row or 
            self.snake.bodies[0].y < 0):
             self.isEnd = True
-            self.reward -=10
+            self.reward -=25
 
     def _snake_collider(self):
         if(self.snake.bodies[0] in self.snake.bodies[1:]):
             self.isEnd = True
-            self.reward -= 20
+            self.reward -= 25
 
     def _collision_handler(self):
         self._food_collider()
@@ -115,6 +115,13 @@ class Game:
     def _snake_direction_handler(self, direction: Direction):
         if(abs(direction.value - self.snake.direction.value) > 1):
             self.snake.direction = direction
+            self.reward += 5
+            print("dir change")
+        else:
+            # can not change, bad input punish sir (harder than die hahaha)
+            self.reward -= 50
+            print("dir not")
+        # self.snake.direction = direction
 
     def human_move(self):
         keys = pygame.key.get_pressed()
@@ -155,19 +162,19 @@ class Game:
         frame = np.full((self.total_row, self.total_col), 0, np.float32)
         # paint snake body
         for i in range(self.snake.length):
-            frame[self.snake.bodies[i].y][self.snake.bodies[i].x] = 0.25
+            frame[self.snake.bodies[i].y][self.snake.bodies[i].x] = -1
         
         # paint food
         frame[self.food.pos.y][self.food.pos.x] = 1.0
         # paint head bit bigger init
-        frame[self.snake.bodies[0].y][self.snake.bodies[0].x] = 0.75
+        frame[self.snake.bodies[0].y][self.snake.bodies[0].x] = 0.5
         if(isShow):
             cv2.imshow('test', frame)
             cv2.waitKey(1)
         return frame
     
     # Do a one game loop (move, update, draw)
-    def loop(self, isHumanControlled: bool, action: Actions):
+    def loop(self, isHumanControlled: bool, action):
         """
         Executes a single game loop.
         :returns: GameInformation instance reward, game_over, score.
@@ -179,8 +186,13 @@ class Game:
                 # Get human input
                 self.human_move()
             else:
-                if(action != Actions.STRAIGHT):
-                    self._snake_direction_handler(self.RELATIVE_DIRECTION[(self.snake.direction, action)])
+                # check is it direction based or action based
+                if(isinstance(action, Actions)):
+                    if(action != Actions.STRAIGHT):
+                        self._snake_direction_handler(self.RELATIVE_DIRECTION[(self.snake.direction, action)])
+                else:
+                    print(f'snake will move to: {action}')
+                    self._snake_direction_handler(action)
 
             self.snake._move()
             self._collision_handler()

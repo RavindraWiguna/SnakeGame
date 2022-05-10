@@ -89,8 +89,8 @@ class Game:
            
             self.score+=1
             self.reward +=75
-            print("uncomment add body to add body")
-            # self.snake.add_body()
+            # print("uncomment add body to add body")
+            self.snake.add_body()
             self._respawn_food()
             self.just_eat_food = True
 
@@ -117,11 +117,11 @@ class Game:
         if(abs(direction.value - self.snake.direction.value) > 1):
             self.snake.direction = direction
             self.reward += 5
-            print("dir change")
+            # print("dir change")
         else:
             # can not change, bad input punish sir (harder than die hahaha)
             self.reward -= 50
-            print("dir not")
+            # print("dir not")
         # self.snake.direction = direction
 
     def human_move(self):

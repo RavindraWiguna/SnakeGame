@@ -8,7 +8,7 @@ if __name__ =="__main__":
     clock = pygame.time.Clock()
     isRunning = True
     while isRunning:
-        clock.tick(15)
+        clock.tick(10)
         # snake_game.mini_vision(True)
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):

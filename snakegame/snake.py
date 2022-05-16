@@ -17,7 +17,7 @@ class Snake:
         self.size = block_size
         self.inner_size = self.size//2
         self.offset = self.size//4
-        self.bodies = [Point(x, y, None)]
+        self.bodies = [Point(x, y, Direction.RIGHT)]
         self.length = 1
         self.direction = Direction.RIGHT
 
@@ -43,7 +43,7 @@ class Snake:
     
     def add_body(self):
         # just append 0, 0 it will then be updated
-        self.bodies.append(Point(-1, -1, None))
+        self.bodies.append(Point(-1, -1, Direction.NaN))
         self.length +=1
     
     def render(self, win):

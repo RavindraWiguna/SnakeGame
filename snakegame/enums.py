@@ -6,6 +6,7 @@ class Direction(Enum):
     LEFT = 2
     UP = 4
     DOWN = 5
+    NaN = 0
 
 class Actions(Enum):
     STRAIGHT = 1

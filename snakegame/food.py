@@ -1,4 +1,6 @@
 from pygame import draw
+
+from snakegame.enums import Direction
 from .point import Point
 from collections import Counter
 from random import choice
@@ -12,7 +14,7 @@ class Food:
     '''
     COLOR = (250, 2, 3)
     def __init__(self, x:int, y:int, size:int) -> None:
-        self.pos = Point(x, y, None)
+        self.pos = Point(x, y, Direction.NaN)
         self.size = size
     
     def render(self, win):

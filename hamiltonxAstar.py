@@ -12,10 +12,10 @@ def generate_hamilton_down(width, height, block_size):
     trow = height//block_size
     tcol = width//block_size
     grid = np.zeros((tcol, trow), np.uint8)
-    curPos = Point(0, 0)
+    curPos = Point(0, 0, Direction.NaN)
     hamilton = []
     tileStep = np.zeros(trow*tcol, np.uint16)
-    direction = Point(0, 1)
+    direction = Point(0, 1, Direction.NaN)
     goUp = False
     goBack = False
     visited = 0
@@ -82,7 +82,7 @@ def get_hamilton_direction(head: Point, trow: int, ttiles:int, hamiltons: list, 
     nextStep = curHamiltonStep+1
     nextStep = nextStep%(ttiles)
     nextTile = hamiltons[nextStep]
-    nextPoint = Point(nextTile%trow, nextTile//trow)
+    nextPoint = Point(nextTile%trow, nextTile//trow, None)
     # print(head, curTile, curHamiltonStep, nextStep, nextTile, nextPoint)
     return get_direction(head, nextPoint)
 
@@ -100,6 +100,7 @@ def reconstruct_path(finish_state, cameFrom: dict):
 
 def create_node(min_node: Point, direction: Direction):
     x, y = min_node.x, min_node.y
+    # print(f'got: {direction}')
     if(direction == Direction.UP):
         return Point(x, y-1, direction)
     if(direction == Direction.LEFT):
@@ -114,32 +115,42 @@ def a_star(start_point: Point, goal_point: Point, tcol: int, trow: int, bodies: 
     open_nodes = PriorityQueue()#store node that haven't explored with pqueue
     closed_state = Counter() #counter for state that has been explored
     everInOpen = Counter()
+    gScore = defaultdict(lambda:float('inf'))
     cameFrom = {} #dict to map where a node came from
     
     #node scores
-    gScore = defaultdict(lambda:float('inf'))
+    
+    start_point.last_move = last_move
     gScore[start_point.get_state()] = 0 #save start node state gscore to 0
+    print(f'start: {gScore[start_point.get_state()]}, {start_point.get_state()}')
     start_point.h = get_heuristic_val(start_point, goal_point) 
     start_point.f = start_point.h
-    start_point.last_move = last_move
-    open_nodes.put(start_point)
+    
+
+    open_nodes.put((start_point.f, start_point.h, start_point))
     everInOpen[start_point.get_state()]+=1
     cameFrom[start_point.get_state()] = (None, ".")
     total_opened_node+=1
-    path = None #saved path for return value
+    path = ['.', last_move] #saved path for return value
     tentative_gScore = None #variable to hold min node gScore
     #get all possible move
     possible_move = (Direction.UP, Direction.LEFT, Direction.DOWN, Direction.RIGHT)
     # reverse move
     reverse_move = {Direction.UP: Direction.DOWN, Direction.DOWN:Direction.UP, Direction.LEFT:Direction.RIGHT,Direction.RIGHT:Direction.LEFT,None:None}
     #loop while open list is not empty in pythonic way
-    while open_nodes:
+    total_in_que = 1
+    while total_in_que > 0:
+        # print(open_nodes.queue)
+        # print(total_in_que)
         #get node with min f value
-        min_node = open_nodes.get()
+        min_node = open_nodes.get()[2]
         # print(min_node)
+        # print(min_node.f, min_node.h)
+        total_in_que-=1
+        # print(f'min: {min_node}')
         #add min node counter in 
         closed_state[min_node.get_state()]+=1
-        
+        # input("x")
         #check if it is the goal node
         if (min_node == goal_point):
             # print("HEY, Found the goal!")
@@ -148,30 +159,37 @@ def a_star(start_point: Point, goal_point: Point, tcol: int, trow: int, bodies: 
         
 
         # print(f'got {len(possible_move)} possible move')
+        totalmove = 0
         for move in possible_move:
             if(move == reverse_move[min_node.last_move]):
                 continue
+            totalmove+=1
             #generate node based on move
             nextNode = create_node(min_node, move)
+            # print(f'lmove: {nextNode.last_move}| move: {move}')
             # check wall
             if(nextNode.x >= tcol or nextNode.x < 0 or nextNode.y < 0 or nextNode.y >= trow):
                 continue
             # check body
             if(nextNode in bodies):
                 continue
-            # print(move_state)
+            
             # os.system("pause")
             #check if this node's state has been reached/visited/closed
             if(closed_state[nextNode.get_state()] > 0):
                 continue
            
+            # print(nextNode)
+            # print(f'mnode: {gScore[min_node.get_state()]}, {min_node.get_state()}')
             #this node havent yet visited
             tentative_gScore = gScore[min_node.get_state()] + 1 #distance of node is same, so always +1
             if(tentative_gScore < gScore[nextNode.get_state()]):
+                # print("nice")
                 #Found a smaller g score of this state, so update the g score and cameFrom
                 cameFrom[nextNode.get_state()] = (min_node.get_state(), move)
                 gScore[nextNode.get_state()] = tentative_gScore
                 #calculate other value of this node
+                nextNode.g = tentative_gScore
                 nextNode.h = get_heuristic_val(nextNode, goal_point)
                 nextNode.f = tentative_gScore + nextNode.h
                 
@@ -179,21 +197,62 @@ def a_star(start_point: Point, goal_point: Point, tcol: int, trow: int, bodies: 
                 if(everInOpen[nextNode.get_state()]==0):
                     #never in open
                     total_opened_node+=1
-                    open_nodes.put(nextNode)
+                    # print(f'put: {nextNode}')
+                    open_nodes.put((nextNode.f, nextNode.h, nextNode))
+                    total_in_que+=1
                     everInOpen[nextNode.get_state()]+=1
                 # if(nextNode not in open_nodes.queue):
                     # total_opened_node+=1
                     # open_nodes.put(nextNode)
-
+        # print(f'mn:{min_node.get_state()}= {totalmove}')
+            # print("end for")
         #End of For Loop
+        # print("end while")    
     #End of While Loop
+    
+    # print("returning")
     # print(path[1])
     # print(path)
-    for dir in path:
-        print(dir)
+    # for dir in path:
+    #     print(dir)
     # print("|")
     # input("contiunue")
     return path[1] # this is auto path
+
+
+def do_path():
+    width, height = 480, 480
+    win = pygame.display.set_mode((width, height))
+    snake_game = Game(win, width, height, 24)
+    clock = pygame.time.Clock()
+    isRunning = True
+    direction = snake_game.snake.direction
+    last_direction = None
+    snake_game.draw()
+    pygame.display.update()
+    while isRunning:
+        clock.tick(25)
+        # snake_game.mini_vision(True)
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT):
+                isRunning = False
+                break
+        last_direction = direction
+        paths = a_star(snake_game.snake.bodies[0], snake_game.food.pos, snake_game.total_col, snake_game.total_row, snake_game.snake.bodies[1:], last_direction)
+        while paths:
+            clock.tick(25)
+            direction = paths[0]
+            print(f'{direction}')
+            paths.pop(0)
+            game_info = snake_game.loop(False, direction)
+            # input("")
+            isRunning = isRunning and not game_info.game_over
+            snake_game.draw()
+            pygame.display.update()
+        
+    
+    snake_game.stop()
+    pygame.quit()     
 
 def play_snake_a_star():
     width, height = 480, 480
@@ -206,7 +265,9 @@ def play_snake_a_star():
     snake_game.draw()
     pygame.display.update()
     while isRunning:
-        clock.tick(25)
+        # print("next game loop")
+        # input("c")
+        clock.tick(50)
         # snake_game.mini_vision(True)
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
@@ -233,7 +294,7 @@ def play_snake():
     isRunning = True
     hamiltons, tileSteps = generate_hamilton_down(width, height, 24)
     while isRunning:
-        clock.tick(25)
+        # clock.tick(25)
         # snake_game.mini_vision(True)
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
@@ -256,3 +317,4 @@ if __name__ =="__main__":
     # generate_hamilton_down(480, 480, 24)
     # play_snake()
     play_snake_a_star()
+    # do_path()
